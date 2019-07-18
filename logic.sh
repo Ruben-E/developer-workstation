@@ -29,55 +29,45 @@ move_dotfiles() {
 
 add_brew_taps() {
     if [ -e $workstation_dir/.taps ]; then
+        taps=$(brew tap-info --installed)
         for tap in $(<$workstation_dir/.taps); do
-            add_brew_tap $tap
+            if [[ ! $(echo $taps | grep $tap) ]]; then
+                echo_install "Tapping $tap"
+                brew tap $tap >/dev/null
+                print_success "$tap tapped!"
+            else
+                print_success_muted "$tap already tapped. Skipped."
+            fi
         done
     fi
 }
-
-add_brew_tap() {
-    if [[ ! $(brew tap-info --installed | grep $1) ]]; then
-        echo_install "Tapping $1"
-		brew tap $1 >/dev/null
-		print_in_green "${bold}✓ tapped!${normal}\n"
-	else
-		print_success_muted "$1 already tapped. Skipped."
-    fi
-}
-
 install_brews() {
     if [ -e $workstation_dir/.brews ]; then
+        installed_brews=$(brew list)
         for brew in $(<$workstation_dir/.brews); do
-            install_brew $brew
+            if [[ ! $(echo $installed_brews | grep $brew) ]]; then
+                echo_install "Installing $brew"
+                brew install $brew >/dev/null
+                print_success "$brew installed!"
+            else
+                print_success_muted "$brew already installed. Skipped."
+            fi
         done
-    fi
-}
-
-install_brew() {
-    if [[ ! $(brew list | grep $1) ]]; then
-        echo_install "Installing $1"
-		brew install $1 >/dev/null
-		print_in_green "${bold}✓ installed!${normal}\n"
-	else
-		print_success_muted "$1 already installed. Skipped."
     fi
 }
 
 install_casks() {
     if [ -e $workstation_dir/.casks ]; then
+        installed_casks=$(brew cask list)
         for cask in $(<$workstation_dir/.casks); do
-            install_cask $cask
+            if [[ ! $(echo $installed_casks | grep $cask) ]]; then
+                echo_install "Installing $cask"
+                brew cask install $cask --appdir=/Applications >/dev/null
+                print_success "$cask installed!"
+            else
+                print_success_muted "$cask already installed. Skipped."
+            fi
         done
-    fi
-}
-
-install_cask() {
-    if [[ ! $(brew cask list | grep $1) ]]; then
-        echo_install "Installing $1"
-		brew cask install $1 --appdir=/Applications >/dev/null
-		print_in_green "${bold}✓ installed!${normal}\n"
-	else
-		print_success_muted "$1 already installed. Skipped."
     fi
 }
 
@@ -103,9 +93,25 @@ setup_directories() {
             directory=$(eval echo $directory_s)
             if [ ! -d $directory ]; then
                 mkdir -p $directory
-                print_success "Directory $directory created"
+                print_success "$directory created!"
             else
                 print_success_muted "Directory $directory already exists. Skipping"
+            fi
+        done
+    fi
+}
+
+install_fonts() {
+    if [ -e $workstation_dir/.fonts ]; then
+        release=$(curl -L -s -H 'Accept: application/json' https://github.com/ryanoasis/nerd-fonts/releases/latest)
+        version=$(echo $release | sed -e 's/.*"tag_name":"\([^"]*\)".*/\1/')
+        for font in $(<$workstation_dir/.fonts); do
+            if [ ! -d ~/Library/Fonts/$font ]; then
+                echo_install "Installing $font"
+                wget -P ~/Library/Fonts https://github.com/ryanoasis/nerd-fonts/releases/download/$NERDFONTS_VERSION/$font.zip --quiet;unzip -q ~/Library/Fonts/$font -d ~/Library/Fonts/$font
+                print_success "$1 installed"
+            else
+                print_success_muted "$font already installed. Skipped."
             fi
         done
     fi
