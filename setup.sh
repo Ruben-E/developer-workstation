@@ -45,6 +45,14 @@ chapter "Cleanup homebrew"
 cleanup_homebrew
 
 # 
+# Apps
+# 
+title "AppStore apps"
+
+chapter "Install AppStore apps"
+install_appstore_apps
+
+# 
 # Directories
 # 
 title "Directories"

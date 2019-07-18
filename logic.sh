@@ -23,6 +23,7 @@ move_dotfiles() {
     cp $cwd/.brews $workstation_dir/.brews
     cp $cwd/.casks $workstation_dir/.casks
     cp $cwd/.taps $workstation_dir/.taps
+    cp $cwd/.apps $workstation_dir/.apps
     cp $cwd/.directories $workstation_dir/.directories
     cp $cwd/.fonts $workstation_dir/.fonts
 }
@@ -85,6 +86,42 @@ upgrade_casks() {
 
 cleanup_homebrew() {
     brew cleanup 2> /dev/null
+}
+
+mas_setup() {
+    if mas account > /dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+install_appstore_apps() {
+    if [ -e $workstation_dir/.apps ]; then
+        if [ -x mas ]; then
+            print_warning "Tool mas not installed. Installing"
+            echo_install "Installing mas"
+            brew install mas >/dev/null
+            print_success "mas installed!"
+        fi
+
+        if mas_setup; then
+            installed_apps=$(mas list)
+            for app in $(<$workstation_dir/.apps); do
+                KEY="${app%%::*}"
+                VALUE="${app##*::}"
+                if [[ ! $(echo $installed_apps | grep $KEY) ]]; then
+                    echo_install "Installing $VALUE"
+                    mas install $KEY >/dev/null
+                    print_success "$VALUE installed!"
+                else
+                    print_success_muted "$VALUE already installed. Skipped."
+                fi
+            done
+        else
+            print_warning "Please signin to App Store first. Skipping."
+        fi
+    fi
 }
 
 setup_directories() {
