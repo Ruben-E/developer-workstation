@@ -13,7 +13,7 @@ balenaetcher
 firefox-developer-edition
 flux
 java
-adoptopenjdk8
+adoptopenjdk/openjdk/adoptopenjdk8
 slack
 postman
 steelseries-exactmouse-tool
@@ -38,6 +38,7 @@ bettertouchtool
 logitech-options
 tunnelblick
 google-cloud-sdk
-blockblock
 knockknock
 hammerspoon
+sourcetree
+nextcloud
